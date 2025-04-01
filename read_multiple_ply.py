@@ -126,11 +126,41 @@ def visualize_point_clouds_animation(point_clouds, file_names=None, delay_time=0
     print(f"已准备 {len(cumulative_pcds)} 个累积点云")
     
     # 创建自定义动画回调函数
-    global current_frame
+    global current_frame, is_paused
     current_frame = 0
+    is_paused = False
+    
+    # 添加控制台控制暂停功能的线程
+    def pause_control_thread():
+        global is_paused
+        print("动画已开始，按Enter键暂停/继续动画")
+        while current_frame < len(cumulative_pcds):
+            try:
+                input()  # 等待用户按Enter键
+                is_paused = not is_paused
+                if is_paused:
+                    print("动画已暂停，按Enter键继续")
+                else:
+                    print("动画已继续")
+            except EOFError:
+                break
+            except KeyboardInterrupt:
+                break
+                
+    # 启动暂停控制线程
+    import threading
+    control_thread = threading.Thread(target=pause_control_thread)
+    control_thread.daemon = True  # 设置为守护线程，主线程结束时自动退出
+    control_thread.start()
     
     def animation_callback(vis):
-        global current_frame
+        global current_frame, is_paused
+        
+        # 如果暂停状态，不更新帧
+        if is_paused:
+            time.sleep(0.1)  # 短暂休眠，避免CPU占用过高
+            return True
+            
         if current_frame < len(cumulative_pcds):
             # 删除之前的几何体
             vis.clear_geometries()
@@ -198,6 +228,13 @@ def custom_draw_geometries_with_animation_callback(
 ):
     """
     自定义动画回调函数，解决Open3D动画问题
+    
+    参数:
+        geometries: 几何体列表
+        callback_function: 动画回调函数
+        window_name: 窗口名称
+        width: 窗口宽度
+        height: 窗口高度
     """
     vis = o3d.visualization.Visualizer()
     vis.create_window(window_name=window_name, width=width, height=height)
@@ -205,7 +242,7 @@ def custom_draw_geometries_with_animation_callback(
     # 设置渲染选项
     opt = vis.get_render_option()
     opt.background_color = np.array([0, 0, 0])  # 黑色背景
-    opt.point_size = 3.0  # 点的大小
+    opt.point_size = 1.0  # 点的大小
     
     # 添加所有几何体
     for geometry in geometries:
@@ -231,7 +268,7 @@ if __name__ == "__main__":
     # 可视化点云 - 使用动画方式
     if point_clouds:
         # 设置动画速度（秒）- 数值越小，动画越快
-        animation_speed = 0.5
+        animation_speed = 0.02
         visualize_point_clouds_animation(point_clouds, file_names, delay_time=animation_speed)
         
         # 如果您仍想显示合并后的静态视图，可以取消下面的注释
