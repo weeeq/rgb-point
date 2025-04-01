@@ -19,7 +19,7 @@ def visualize_point_cloud(point_cloud):
 
 if __name__ == "__main__":
     # 请修改为您的PLY文件路径
-    file_path = r"D:\code\dog_data\3.31\pictures_lidar\0.ply"
+    file_path = r"D:\code\rgb-point\final.ply"
     
     # 读取点云
     pcd = read_ply(file_path)
