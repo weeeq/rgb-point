@@ -2,6 +2,8 @@ import numpy as np
 import ast
 import struct
 import open3d as o3d
+import os
+import glob
 
 def parse_point_cloud_data(file_path):
     """从txt文件解析点云数据"""
@@ -46,21 +48,33 @@ def parse_point_cloud_data(file_path):
     return pcd
 
 def main():
-    input_file = "first_frame_cloud.txt"
-    output_file = "point_cloud.ply"
+    # 定义输入和输出目录
+    input_dir = r"D:\code\dog_data\3.31\frames_lidar"
+    output_dir = r"D:\code\dog_data\3.31\pictures_lidar"
     
-    print("正在解析点云数据...")
-    pcd = parse_point_cloud_data(input_file)
+    # 确保输出目录存在
+    os.makedirs(output_dir, exist_ok=True)
     
-    print(f"成功解析 {len(pcd.points)} 个点")
-    print("正在写入PLY文件...")
-    o3d.io.write_point_cloud(output_file, pcd)
+    # 获取所有输入文件并排序
+    input_files = sorted(glob.glob(os.path.join(input_dir, "*.txt")))
     
-    print(f"PLY文件已保存为 {output_file}")
+    print(f"找到 {len(input_files)} 个点云数据文件")
     
-    # 可视化点云（可选）
-    print("正在可视化点云...")
-    o3d.visualization.draw_geometries([pcd])
+    # 批量处理每个文件
+    for i, input_file in enumerate(input_files):
+        print(f"正在处理文件 {os.path.basename(input_file)} ({i+1}/{len(input_files)})...")
+        
+        # 解析点云数据
+        pcd = parse_point_cloud_data(input_file)
+        
+        # 创建对应的输出文件名
+        output_file = os.path.join(output_dir, f"{i}.ply")
+        
+        # 保存为PLY文件
+        o3d.io.write_point_cloud(output_file, pcd)
+        print(f"已解析 {len(pcd.points)} 个点，保存到 {output_file}")
+    
+    print("所有文件处理完成")
 
 if __name__ == "__main__":
     main() 

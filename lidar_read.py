@@ -62,4 +62,4 @@ def save_to_txt(data, output_file):
             f.write(str(points))
 
 # 读取雷达数据并保存所有帧到frames_lidar目录
-read_msg_file(r"D:\code\rgb-point\73ca6e61-c14c-4d9d-b1f8-1554e060f893\rt_utlidar_cloud_deskewed.msg", "frames_lidar")
+read_msg_file(r"D:\code\dog_data\3.31\rt_utlidar_cloud_deskewed.msg", "frames_lidar")
