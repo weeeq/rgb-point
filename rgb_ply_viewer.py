@@ -52,6 +52,15 @@ except Exception as e:
 # 默认使用中文标题
 use_english_titles = False
 
+# 添加全局变量来保存视图参数
+last_view_params = {
+    'elev': None,
+    'azim': None,
+    'xlim': None,
+    'ylim': None,
+    'zlim': None
+}
+
 # 直接定义PLY读取函数，不再从外部模块导入
 def read_ply(ply_path):
     """读取PLY文件并返回点云数据"""
@@ -150,6 +159,8 @@ def get_surrounding_ply_files(ply_files, current_idx, range_before=15, range_aft
 
 def display_rgb_and_merged_ply(rgb_path, current_ply_path, ply_dir, ply_files, current_ply_idx):
     """显示RGB图像和合并的PLY点云数据"""
+    global last_view_params  # 使用全局视图参数
+    
     # 创建一个有两个子图的图形
     fig = plt.figure(figsize=(15, 7))
     
@@ -250,9 +261,30 @@ def display_rgb_and_merged_ply(rgb_path, current_ply_path, ply_dir, ply_files, c
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
     
+    # 应用之前保存的视图参数（如果有）
+    if last_view_params['elev'] is not None:
+        ax2.view_init(elev=last_view_params['elev'], azim=last_view_params['azim'])
+        if last_view_params['xlim'] is not None:
+            ax2.set_xlim(last_view_params['xlim'])
+            ax2.set_ylim(last_view_params['ylim'])
+            ax2.set_zlim(last_view_params['zlim'])
+    
     plt.tight_layout()
-    # 显示图像并等待用户关闭窗口
-    plt.show()  # 使用普通的阻塞式显示，等待用户关闭窗口后继续
+    
+    # 显示图像并保存关闭前的视图参数
+    plt.show(block=False)  # 非阻塞显示
+    
+    # 等待用户调整视图并关闭窗口
+    while plt.fignum_exists(fig.number):
+        plt.pause(0.1)  # 短暂暂停以便处理GUI事件
+        # 保存当前视图参数
+        last_view_params['elev'] = ax2.elev
+        last_view_params['azim'] = ax2.azim
+        last_view_params['xlim'] = ax2.get_xlim()
+        last_view_params['ylim'] = ax2.get_ylim()
+        last_view_params['zlim'] = ax2.get_zlim()
+    
+    # 用户关闭窗口后继续
 
 def main():
     # 设置RGB图像和PLY文件的目录
