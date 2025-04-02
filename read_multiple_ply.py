@@ -6,7 +6,7 @@ import time
 # 直接在代码中定义配置
 CONFIG = {
     "folder_path":r"D:\code\dog_data\3.31\pictures_lidar",
-    "max_files": 200
+    "max_files": 20
 }
 
 def read_ply_files_in_folder(folder_path, max_files=-1):
